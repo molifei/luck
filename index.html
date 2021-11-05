@@ -50,7 +50,7 @@
       margin-bottom: 6px;
     }
 
-    button{
+    button {
       display: block;
       width: 150px;
       height: 50px;
@@ -63,126 +63,70 @@
 <body>
 <div class="wrap">
   <h2>红球</h2>
-  <ul id="red" class="red">
-    <li>1</li>
-    <li>2</li>
-    <li>3</li>
-    <li>4</li>
-    <li>5</li>
-    <li>6</li>
-    <li>7</li>
-    <li>8</li>
-    <li>9</li>
-    <li>10</li>
-    <li>11</li>
-    <li>12</li>
-    <li>13</li>
-    <li>14</li>
-    <li>15</li>
-    <li>16</li>
-    <li>17</li>
-    <li>18</li>
-    <li>19</li>
-    <li>20</li>
-    <li>21</li>
-    <li>22</li>
-    <li>23</li>
-    <li>24</li>
-    <li>25</li>
-    <li>26</li>
-    <li>27</li>
-    <li>28</li>
-    <li>29</li>
-    <li>30</li>
-    <li>31</li>
-    <li>32</li>
-    <li>33</li>
-  </ul>
+  <ul id="red" class="red"></ul>
   <h2>蓝球</h2>
-  <ul id="blue" class="blue">
-    <li>1</li>
-    <li>2</li>
-    <li>3</li>
-    <li>4</li>
-    <li>5</li>
-    <li>6</li>
-    <li>7</li>
-    <li>8</li>
-    <li>9</li>
-    <li>10</li>
-    <li>11</li>
-    <li>12</li>
-    <li>13</li>
-    <li>14</li>
-    <li>15</li>
-    <li>16</li>
-  </ul>
-
-  <button id="restart">again</button>
+  <ul id="blue" class="blue"></ul>
 </div>
 </body>
 <script>
 // 红球从1 - 33 中选择 6 个
 // 蓝球从1 - 16 中选择 1 个
-
-let redList = [], blueList = [];
+let options = {
+  redLength: 33,
+  redLuck: 6,
+  blueLength: 16,
+  blueLuck: 1,
+}
 
 // 获取随机函数
-const getRandom = function (min, max) {
+const getRandom = (min, max) => {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-const getGoodLuck = function (luckList, min, max, length) {
-  for (let i = 0; i < length; i++) {
+// 获取幸运数组的操作
+const getGoodLuckOption = (min, max, length) => {
+  return new Array(length).fill(1).reduce((prev, target) => {
     let luckyNum = getRandom(min, max)
-    while (luckList.includes(luckyNum)) {
-      luckyNum = getRandom(min, max)
-    }
-    luckList.push(luckyNum)
+    while (prev.includes(luckyNum)) luckyNum = getRandom(min, max)
+    prev.push(luckyNum)
+    return prev
+  },[])
+}
+
+// 获取幸运数组
+const getGoodLuck = () => {
+  return {
+    redList: getGoodLuckOption(1, options.redLength, options.redLuck),
+    blueList: getGoodLuckOption(1, options.blueLength, options.blueLuck)
   }
 }
 
-const addLuckColor = (luckNodeList, luckNumList) => {
-  luckNodeList.forEach(node => {
-    let text = node.innerText
-    if (luckNumList.includes(Number(text))) {
-      node.classList.add('current')
-    }
+// 渲染号码
+const renderLi = (val, current = false) => {
+  return `<li class="${current ? 'current' : ''}">${val}</li>`
+}
+
+// 渲染号码组的操作
+const renderListOption = (luckList) => {
+  Object.keys(luckList).forEach(item => {
+    renderList(item.split('List')[0], luckList[item])
   })
 }
 
-const showLuckNum = async function () {
-  getGoodLuck(redList, 1, 33, 6)
-  getGoodLuck(blueList, 1, 16, 1)
+// 渲染号码组
+const renderList = (nodeKey, content) => {
+  document.getElementById(nodeKey).innerHTML = new Array(options[`${nodeKey}Length`]).fill(1).reduce((prev, target, index) => {
+    return prev += renderLi(index + 1, content.includes(index + 1))
+  }, '')
+}
 
-  let redNodes = [...document.getElementById('red').children]
-  let blueNodes = [...document.getElementById('blue').children]
-  addLuckColor(redNodes, redList)
-  addLuckColor(blueNodes, blueList)
+const showLuckNum = function () {
+  renderListOption(getGoodLuck())
 }
 
 showLuckNum()
-
-const restart = () => {
-  redList = []
-  blueList = []
-  let redNodes = [...document.getElementById('red').children]
-  let blueNodes = [...document.getElementById('blue').children]
-  restartColor(redNodes)
-  restartColor(blueNodes)
-
-  showLuckNum()
-}
-
-const restartColor = (luckNodeList) => {
-  luckNodeList.forEach(node => {
-    node.classList.remove('current')
-  })
-}
-
-document.getElementById('restart').onclick = restart
 
 </script>
 </html>
